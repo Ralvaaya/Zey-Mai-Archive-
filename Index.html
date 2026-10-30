@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zey & Mai Archive</title>
+    <style>
+        /* Tema Telegram Dark Mode */
+        :root {
+            --bg-color: #1c242d;
+            --header-color: #212d3b;
+            --text-color: #ffffff;
+            --accent-color: #5288c1;
+            --folder-bg: #2b5278;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* Tampilan Login PIN */
+        #login-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .pin-box {
+            text-align: center;
+        }
+        .pin-box input {
+            padding: 15px;
+            font-size: 24px;
+            width: 200px;
+            text-align: center;
+            border-radius: 10px;
+            border: none;
+            background: #2b3643;
+            color: white;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+        }
+        .pin-box button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Header bergaya Telegram */
+        .header {
+            background-color: var(--header-color);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Navigasi Folder (Scroll Horizontal) */
+        .folder-nav {
+            display: flex;
+            overflow-x: auto;
+            background-color: var(--header-color);
+            padding: 10px;
+            gap: 10px;
+            white-space: nowrap;
+        }
+        .folder-nav::-webkit-scrollbar { display: none; }
+        .folder-btn {
+            background-color: transparent;
+            color: #8c97a3;
+            border: none;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+        .folder-btn.active {
+            color: var(--accent-color);
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        /* Galeri Masonry (Menyesuaikan Dimensi Asli) */
+        .gallery-container {
+            padding: 10px;
+            column-count: 2; /* 2 kolom untuk tampilan HP */
+            column-gap: 10px;
+        }
+        .media-item {
+            break-inside: avoid;
+            margin-bottom: 10px;
+            position: relative;
+            background: #2b3643;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .media-item img, .media-item video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .download-btn {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 12px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Loading Indicator */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #8c97a3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Layar Login -->
+    <div id="login-screen">
+        <div class="pin-box">
+            <h2>Masukkan PIN</h2>
+            <input type="number" id="pin-input" placeholder="****" inputmode="numeric">
+            <br>
+            <button onclick="checkPIN()">Masuk Archive</button>
+            <p id="error-msg" style="color: #ff5959; display: none;">PIN Salah!</p>
+        </div>
+    </div>
+
+    <!-- Konten Utama -->
+    <div id="main-content" style="display: none;">
+        <div class="header">
+            <h1>Zey & Mai Archive</h1>
+        </div>
+
+        <div class="folder-nav" id="folder-nav">
+            <!-- Tombol folder digenerate otomatis -->
+        </div>
+
+        <div id="gallery" class="gallery-container">
+            <!-- Foto dan Video masuk ke sini -->
+        </div>
+    </div>
+
+    <script>
+        // ================= KARTU PENGATURAN =================
+        const PASSWORD_ANGKA = "12345"; // Ganti dengan angka sandi yang Anda inginkan
+        const GITHUB_USERNAME = "USERNAME_GITHUB_ANDA"; // GANTI DENGAN USERNAME GITHUB ANDA
+        const GITHUB_REPO = "NAMA_REPO_ANDA"; // GANTI DENGAN NAMA REPOSITORI ANDA
+        const BRANCH = "main"; 
+        // ====================================================
+
+        const folders = [
+            "Generate sendiri full NDS",
+            "Generate publik full NDS",
+            "Generate sendiri half NDS",
+            "Generate publik half NDS",
+            "AI edit sendiri",
+            "AI edit publik",
+            "AI edit random",
+            "Video AI sendiri",
+            "Video AI publik",
+            "Real jeketi",
+            "Real random"
+        ];
+
+        // Sistem PIN Akses
+        function checkPIN() {
+            const input = document.getElementById("pin-input").value;
+            if (input === PASSWORD_ANGKA) {
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("main-content").style.display = "block";
+                initGallery();
+            } else {
+                document.getElementById("error-msg").style.display = "block";
+            }
+        }
+
+        // Inisialisasi Navigasi & Galeri
+        function initGallery() {
+            const nav = document.getElementById("folder-nav");
+            folders.forEach((folder, index) => {
+                let btn = document.createElement("button");
+                btn.className = "folder-btn" + (index === 0 ? " active" : "");
+                btn.innerText = folder;
+                btn.onclick = () => {
+                    document.querySelectorAll(".folder-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    loadFolder(folder);
+                };
+                nav.appendChild(btn);
+            });
+            loadFolder(folders[0]); // Load folder pertama otomatis
+        }
+
+        // Fungsi Load Isi Folder via GitHub API
+        async function loadFolder(folderName) {
+            const gallery = document.getElementById("gallery");
+            gallery.innerHTML = '<div class="loading">Memuat file...</div>';
+            
+            // Encode nama folder untuk URL API
+            const folderPath = encodeURIComponent(folderName);
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${folderPath}?ref=${BRANCH}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Folder kosong atau tidak ditemukan");
+                
+                const files = await response.json();
+                gallery.innerHTML = ''; // Bersihkan loading
+
+                files.forEach(file => {
+                    if (file.type === "file") {
+                        const fileExt = file.name.split('.').pop().toLowerCase();
+                        const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(fileExt);
+                        const isVideo = ["mp4", "webm"].includes(fileExt);
+
+                        if (isImage || isVideo) {
+                            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${BRANCH}/${folderPath}/${file.name}`;
+                            
+                            const itemDiv = document.createElement("div");
+                            itemDiv.className = "media-item";
+
+                            let mediaTag = "";
+                            if (isImage) {
+                                mediaTag = `<img src="${rawUrl}" alt="${file.name}" loading="lazy">`;
+                            } else if (isVideo) {
+                                mediaTag = `<video src="${rawUrl}" controls preload="metadata"></video>`;
+                            }
+
+                            // Tombol Download menggunakan Blob agar paksa download di browser mobile
+                            itemDiv.innerHTML = `
+                                ${mediaTag}
+                                <a href="${rawUrl}" target="_blank" download="${file.name}" class="download-btn">⬇ Download</a>
+                            `;
+                            gallery.appendChild(itemDiv);
+                        }
+                    }
+                });
+
+                if(gallery.innerHTML === '') {
+                    gallery.innerHTML = '<div class="loading">Tidak ada media di folder ini.</div>';
+                }
+
+            } catch (error) {
+                gallery.innerHTML = `<div class="loading">Pastikan Anda telah membuat folder "${folderName}" di GitHub dan mengisinya dengan foto/video.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
